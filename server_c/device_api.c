@@ -67,11 +67,7 @@ int device_api_process_stream(eros_id_t source, pb_istream_t *input_stream,
     return status_code;
   }
 
-  // Encode response
-  printf("Encoding response\n");
   int ret =  encode_response(&response, output_stream);
-  printf("Response encoded\n");
-
   return ret;
 }
 
@@ -91,7 +87,7 @@ int device_api_process(eros_id_t source, const uint8_t *buffer, size_t size,
                        size_t *bytes_written)
 {
 
-#if 1
+#if 0
   print_hexdump(ANSI_BBLU "Request" ANSI_RESET, buffer, size);
 #endif
 
@@ -102,7 +98,7 @@ int device_api_process(eros_id_t source, const uint8_t *buffer, size_t size,
   int ret = device_api_process_stream(source, &input_stream, &output_stream);
 
   // Print output
-#if 1
+#if 0
   if (output_stream.bytes_written == 0)
   {
     printf(ANSI_BBLK "No response" ANSI_RESET "\n");
