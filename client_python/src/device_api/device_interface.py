@@ -1,17 +1,12 @@
 from enum import Enum
-from typing import List
+from typing import Dict
 from eros import (
-    ErosInterface,
-    PacketTransport,
     ErosEndpoint,
-    ErosMessage,
     ErosTarget,
 )
-from google.protobuf.message import Message
 
 from .generated import interface_pb2
-import asyncio
-from .models import RGBLed, Servo, GenericModel
+from .models import GenericModel
 
 
 AUTH_INFO = 0x00010000
@@ -45,11 +40,17 @@ class DeviceInterface:
             data = {value.ID: value.encode() for value in values}
 
         return await self.set_request(data, expect_response)
-    
+
+    async def get_single(
+        self,
+        key: int,
+    ) -> bytes | None:
+        return (await self.get(key))[key]  # type: ignore
+
     async def get(
         self,
         keys: list[int] | int,
-    ) -> interface_pb2.Message | None:
+    ) -> Dict[int, bytes] | None:
         if isinstance(keys, int):
             keys = [keys]
 
@@ -58,19 +59,14 @@ class DeviceInterface:
                 keys=keys,
             )
         )
-        return await self.send_and_receive(request)
-    
+        value = await self.send_and_receive(request)
+        return {pair.key: pair.value for pair in value.get_response.key_value_status_pairs}  # type: ignore
 
-    async def set_request(
-        self, data: dict[int, bytes], expect_response: bool = False
-    ) -> interface_pb2.Message | None:
+    async def set_request(self, data: dict[int, bytes], expect_response: bool = False) -> interface_pb2.Message | None:
         request = interface_pb2.Message(
             set_request=interface_pb2.SetRequest(
                 ack_required=expect_response,
-                key_value_pairs=[
-                    interface_pb2.KeyValue(key=key, value=value)
-                    for key, value in data.items()
-                ],
+                key_value_pairs=[interface_pb2.KeyValue(key=key, value=value) for key, value in data.items()],
             )
         )
         if expect_response:
@@ -78,9 +74,7 @@ class DeviceInterface:
         else:
             return await self.send(request)
 
-    async def send_and_receive(
-        self, message: interface_pb2.Message
-    ) -> interface_pb2.Message:
+    async def send_and_receive(self, message: interface_pb2.Message) -> interface_pb2.Message:
         packed = message.SerializeToString()
         result = await self.endpoint.send_and_receive(packed)
         response = interface_pb2.Message()
@@ -109,7 +103,8 @@ class DeviceInterface:
     #         try:
     #             await asyncio.wait_for(self.endpoint.send(packed), timeout)
 
-    #             # TODO: Fix the list, it should conceptually not be a list here since we are only expecting one message (the first)
+    #             # TODO: Fix the list, it should conceptually not be a list here
+    # since we are only expecting one message (the first)
     #             result = await asyncio.wait_for(self.endpoint.receive(), timeout)
 
     #             # Serialize the result
