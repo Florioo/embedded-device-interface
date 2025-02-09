@@ -1,0 +1,1 @@
+This contains the an machine API for generic device.
