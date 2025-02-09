@@ -51,6 +51,7 @@ class RGBColors(Enum):
     GREEN = RGBLed(red=0, green=255, blue=0)
     BLUE = RGBLed(red=0, green=0, blue=255)
     INVALID_BLUE = RGBLed(red=0, green=0, blue=255, ID=0x0A000001)
+    WHITE = RGBLed(red=255, green=255, blue=255)
     
 class Servo(GenericModel):
     value: int

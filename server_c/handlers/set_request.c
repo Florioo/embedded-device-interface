@@ -30,7 +30,7 @@ static bool key_value_decode(pb_istream_t *stream, const pb_field_t *field,
     return false;
   }
 
-  ODIN_parameter_t *parameter =
+  const ODIN_parameter_t *parameter =
       ODIN_get_parameter_by_id(device_api_odin_group, key_value.key, 0);
 
   // TODO: Acces control

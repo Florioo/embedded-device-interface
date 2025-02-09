@@ -1,4 +1,3 @@
-import os
 import subprocess
 import click
 from pathlib import Path
