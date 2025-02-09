@@ -11,6 +11,7 @@ NANOPB_DIR = SCRIPT_DIR / "nanopb.proto"
 PY_OUTPUT_DIR = ROOT_DIR / "client_python" / "src" / "device_api" / "generated"
 C_OUTPUT_DIR = ROOT_DIR / "server_c" / "generated"
 
+
 def run_command(cmd: str):
     print(f"\n{cmd}\n")
     result = subprocess.run(cmd, shell=True)
@@ -36,12 +37,8 @@ def cli():
 # @cli.command()
 def generate_python():
     print("Generating Python code")
-    run_command(
-        f"protoc -I={SCRIPT_DIR} --python_out={PY_OUTPUT_DIR} --pyi_out={PY_OUTPUT_DIR} {PROTO_DIR}"
-    )
-    run_command(
-        f"protoc -I={SCRIPT_DIR} --python_out={PY_OUTPUT_DIR} --pyi_out={PY_OUTPUT_DIR} {NANOPB_DIR}"
-    )
+    run_command(f"protoc -I={SCRIPT_DIR} --python_out={PY_OUTPUT_DIR} --pyi_out={PY_OUTPUT_DIR} {PROTO_DIR}")
+    run_command(f"protoc -I={SCRIPT_DIR} --python_out={PY_OUTPUT_DIR} --pyi_out={PY_OUTPUT_DIR} {NANOPB_DIR}")
 
     file_name = PROTO_DIR.name.replace(".proto", "_pb2.py")
     # Fix file imports

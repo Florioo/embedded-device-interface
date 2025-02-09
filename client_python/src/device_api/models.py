@@ -32,7 +32,6 @@ class RGBLed(GenericModel):
     green: int
     blue: int
 
-
     def encode(self) -> bytes:
         return struct.pack("BBB", self.red, self.green, self.blue)
 
@@ -42,9 +41,8 @@ class RGBLed(GenericModel):
     @classmethod
     def from_hsv(cls, hue: float, saturation: float, value: float):
         r, g, b = colorsys.hsv_to_rgb(hue, saturation, value)
-        return RGBLed(
-            red=int(r * 255), green=int(g * 255), blue=int(b * 255)
-        )
+        return RGBLed(red=int(r * 255), green=int(g * 255), blue=int(b * 255))
+
 
 class RGBColors(Enum):
     RED = RGBLed(red=255, green=0, blue=0)
@@ -52,7 +50,8 @@ class RGBColors(Enum):
     BLUE = RGBLed(red=0, green=0, blue=255)
     INVALID_BLUE = RGBLed(red=0, green=0, blue=255, ID=0x0A000001)
     WHITE = RGBLed(red=255, green=255, blue=255)
-    
+
+
 class Servo(GenericModel):
     value: int
 
