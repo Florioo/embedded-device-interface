@@ -1,0 +1,39 @@
+syntax = "proto2";
+import "nanopb.proto";
+
+message Message{
+    option (nanopb_msgopt).submsg_callback = true;
+
+    oneof content{
+        SetRequest set_request = 1;
+        GetRequest get_request = 2;
+
+        StatusResponse status_response = 25; //Error response
+    }
+}
+
+
+message KeyValue{
+    required uint32 key = 1;
+    // Variable lengtj byes max 64
+    required bytes value = 2 [(nanopb).max_size = 64];
+}
+message SetRequest{
+    repeated KeyValue key_values = 1;
+}
+
+message GetRequest{
+    repeated uint32 keys = 1 [(nanopb).max_count = 16];
+}
+
+message StatusResponse{
+    required StatusCodeEnum code = 1;
+    optional string message = 2 [(nanopb).max_size = 64];
+}
+
+enum StatusCodeEnum{
+    SUCCESS = 0;
+    GENERAL_ERROR = -1;
+    PARAMETER_NOT_FOUND = -2;
+    
+}
