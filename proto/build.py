@@ -40,6 +40,7 @@ def cli():
 
 # @cli.command()
 def generate_python():
+    print("Generating Python code")
     run_command(
         f"protoc -I={SCRIPT_DIR} --python_out={PY_OUTPUT_DIR} --pyi_out={PY_OUTPUT_DIR} {PROTO_DIR}"
     )
@@ -58,6 +59,7 @@ def generate_python():
 
 # @cli.command()
 def generate_c():
+    print("Generating C code")
     run_command(f"nanopb_generator -I {SCRIPT_DIR} -D {C_OUTPUT_DIR} {PROTO_DIR}")
 
 

@@ -1,5 +1,6 @@
 import asyncio
 
+from annotated_types import T
 from eros.transport.websocket import WebsocketInterface
 from eros.transport.udp import UDPInterface
 from eros import ErosInterface
@@ -10,7 +11,7 @@ import struct
 import colorsys
 from device_api.models import RGBLed, Servo
 
-from device_api.models import RGBLed
+from device_api.models import RGBLed,RGBColors
 
 AUTH_INFO = 0x00010000
 RGB_LED = 0x0A000000
@@ -28,28 +29,34 @@ async def set_color(interface: DeviceInterface, led: RGBLed):
 
 
 async def main():
+    
     async with UDPInterface("udp://192.168.1.181:1234", debug=False) as transport:
         # async with WebsocketInterface("ws://192.168.1.181/ws", debug=True) as transport:
+
         eros = ErosInterface(transport, debug=True)
         await eros.start()
         interface = DeviceInterface.from_eros(eros, source_realm=6)
-        while 1:
-            STEPS = 100
-            DELAY = 0.05
-            for i in range(STEPS):
-                await interface.set(
-                    [
-                        RGBLed.from_hsv(i / STEPS, 1, 1),
-                        Servo(ID=SERVO_FRONT_LEFT, value=10),
-                        Servo(ID=SERVO_BACK_LEFT, value=20),
-                        Servo(ID=SERVO_FRONT_RIGHT, value=30),
-                    ],
-                    expect_response=False,
-                )
-                await asyncio.sleep(DELAY)
-                await interface.set(RGBLed.from_hsv(i / STEPS, 1, 0))
-                await asyncio.sleep(DELAY)
 
+        await interface.set(
+            RGBColors.RED,
+            expect_response=True,
+        )
+        
+        await interface.set(
+            RGBColors.INVALID_BLUE,
+            expect_response=True,
+        )
+        
+
+        await interface.set(
+            RGBColors.GREEN,
+            expect_response=False,
+        )
+        await interface.set(
+            RGBColors.INVALID_BLUE,
+            expect_response=False,
+        )
+        
         await asyncio.sleep(1)
         await eros.stop()
 

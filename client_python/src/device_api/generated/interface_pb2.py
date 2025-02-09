@@ -25,7 +25,7 @@ _sym_db = _symbol_database.Default()
 from . import nanopb_pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0finterface.proto\x1a\x0cnanopb.proto\"\x90\x01\n\x07Message\x12\"\n\x0bset_request\x18\x01 \x01(\x0b\x32\x0b.SetRequestH\x00\x12\"\n\x0bget_request\x18\x02 \x01(\x0b\x32\x0b.GetRequestH\x00\x12*\n\x0fstatus_response\x18\x19 \x01(\x0b\x32\x0f.StatusResponseH\x00:\x06\x92?\x03\xb0\x01\x01\x42\t\n\x07\x63ontent\"-\n\x08KeyValue\x12\x0b\n\x03key\x18\x01 \x02(\r\x12\x14\n\x05value\x18\x02 \x02(\x0c\x42\x05\x92?\x02\x08@\"+\n\nSetRequest\x12\x1d\n\nkey_values\x18\x01 \x03(\x0b\x32\t.KeyValue\"!\n\nGetRequest\x12\x13\n\x04keys\x18\x01 \x03(\rB\x05\x92?\x02\x10\x10\"G\n\x0eStatusResponse\x12\x1d\n\x04\x63ode\x18\x01 \x02(\x0e\x32\x0f.StatusCodeEnum\x12\x16\n\x07message\x18\x02 \x01(\tB\x05\x92?\x02\x08@*[\n\x0eStatusCodeEnum\x12\x0b\n\x07SUCCESS\x10\x00\x12\x1a\n\rGENERAL_ERROR\x10\xff\xff\xff\xff\xff\xff\xff\xff\xff\x01\x12 \n\x13PARAMETER_NOT_FOUND\x10\xfe\xff\xff\xff\xff\xff\xff\xff\xff\x01')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0finterface.proto\x1a\x0cnanopb.proto\"\xdc\x01\n\x07Message\x12\"\n\x0bset_request\x18\x01 \x01(\x0b\x32\x0b.SetRequestH\x00\x12$\n\x0cset_response\x18\x33 \x01(\x0b\x32\x0c.SetResponseH\x00\x12\"\n\x0bget_request\x18\x02 \x01(\x0b\x32\x0b.GetRequestH\x00\x12$\n\x0cget_response\x18\x34 \x01(\x0b\x32\x0c.GetResponseH\x00\x12*\n\x0fstatus_response\x18\x19 \x01(\x0b\x32\x0f.StatusResponseH\x00:\x06\x92?\x03\xb0\x01\x01\x42\t\n\x07\x63ontent\"-\n\x08KeyValue\x12\x0b\n\x03key\x18\x01 \x02(\r\x12\x14\n\x05value\x18\x02 \x02(\x0c\x42\x05\x92?\x02\x08@\"7\n\tKeyStatus\x12\x0b\n\x03key\x18\x01 \x02(\r\x12\x1d\n\x04\x63ode\x18\x02 \x02(\x0e\x32\x0f.StatusCodeEnum\"F\n\nSetRequest\x12\"\n\x0fkey_value_pairs\x18\x01 \x03(\x0b\x32\t.KeyValue\x12\x14\n\x0c\x61\x63k_required\x18\x02 \x01(\x08\"K\n\x0bSetResponse\x12\x0f\n\x07success\x18\x01 \x02(\x08\x12+\n\x10key_status_pairs\x18\x02 \x03(\x0b\x32\n.KeyStatusB\x05\x92?\x02\x10\x10\"\x19\n\nGetRequest\x12\x0b\n\x03key\x18\x01 \x02(\r\"P\n\x0bGetResponse\x12\x1d\n\x04\x63ode\x18\x02 \x02(\x0e\x32\x0f.StatusCodeEnum\x12\"\n\x0fkey_value_pairs\x18\x01 \x03(\x0b\x32\t.KeyValue\"G\n\x0eStatusResponse\x12\x1d\n\x04\x63ode\x18\x01 \x02(\x0e\x32\x0f.StatusCodeEnum\x12\x16\n\x07message\x18\x02 \x01(\tB\x05\x92?\x02\x08@*\x8c\x04\n\x0eStatusCodeEnum\x12\x0b\n\x07SUCCESS\x10\x00\x12\x1a\n\rGENERAL_ERROR\x10\xff\xff\xff\xff\xff\xff\xff\xff\xff\x01\x12 \n\x13PARAMETER_NOT_FOUND\x10\xfe\xff\xff\xff\xff\xff\xff\xff\xff\x01\x12\x17\n\nODIN_ERROR\x10\xf7\xff\xff\xff\xff\xff\xff\xff\xff\x01\x12$\n\x17ODIN_ERROR_NO_PARAMETER\x10\xf6\xff\xff\xff\xff\xff\xff\xff\xff\x01\x12(\n\x1bODIN_ERROR_INVALID_ARGUMENT\x10\xf5\xff\xff\xff\xff\xff\xff\xff\xff\x01\x12+\n\x1eODIN_ERROR_PARAMETER_NOT_FOUND\x10\xf4\xff\xff\xff\xff\xff\xff\xff\xff\x01\x12%\n\x18ODIN_ERROR_SIZE_MISMATCH\x10\xf3\xff\xff\xff\xff\xff\xff\xff\xff\x01\x12(\n\x1bODIN_ERROR_BUFFER_TOO_SMALL\x10\xf2\xff\xff\xff\xff\xff\xff\xff\xff\x01\x12)\n\x1cODIN_ERROR_PERMISSION_DENIED\x10\xf1\xff\xff\xff\xff\xff\xff\xff\xff\x01\x12*\n\x1dODIN_ERROR_UNSUPPORTED_FORMAT\x10\xf0\xff\xff\xff\xff\xff\xff\xff\xff\x01\x12%\n\x18ODIN_ERROR_NOT_SUPPORTED\x10\xef\xff\xff\xff\xff\xff\xff\xff\xff\x01\x12&\n\x19ODIN_ERROR_FILE_NOT_FOUND\x10\xee\xff\xff\xff\xff\xff\xff\xff\xff\x01\x12\"\n\x15ODIN_ERROR_VALIDATION\x10\xed\xff\xff\xff\xff\xff\xff\xff\xff\x01')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -36,20 +36,26 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_MESSAGE']._serialized_options = b'\222?\003\260\001\001'
   _globals['_KEYVALUE'].fields_by_name['value']._loaded_options = None
   _globals['_KEYVALUE'].fields_by_name['value']._serialized_options = b'\222?\002\010@'
-  _globals['_GETREQUEST'].fields_by_name['keys']._loaded_options = None
-  _globals['_GETREQUEST'].fields_by_name['keys']._serialized_options = b'\222?\002\020\020'
+  _globals['_SETRESPONSE'].fields_by_name['key_status_pairs']._loaded_options = None
+  _globals['_SETRESPONSE'].fields_by_name['key_status_pairs']._serialized_options = b'\222?\002\020\020'
   _globals['_STATUSRESPONSE'].fields_by_name['message']._loaded_options = None
   _globals['_STATUSRESPONSE'].fields_by_name['message']._serialized_options = b'\222?\002\010@'
-  _globals['_STATUSCODEENUM']._serialized_start=380
-  _globals['_STATUSCODEENUM']._serialized_end=471
+  _globals['_STATUSCODEENUM']._serialized_start=692
+  _globals['_STATUSCODEENUM']._serialized_end=1216
   _globals['_MESSAGE']._serialized_start=34
-  _globals['_MESSAGE']._serialized_end=178
-  _globals['_KEYVALUE']._serialized_start=180
-  _globals['_KEYVALUE']._serialized_end=225
-  _globals['_SETREQUEST']._serialized_start=227
-  _globals['_SETREQUEST']._serialized_end=270
-  _globals['_GETREQUEST']._serialized_start=272
-  _globals['_GETREQUEST']._serialized_end=305
-  _globals['_STATUSRESPONSE']._serialized_start=307
-  _globals['_STATUSRESPONSE']._serialized_end=378
+  _globals['_MESSAGE']._serialized_end=254
+  _globals['_KEYVALUE']._serialized_start=256
+  _globals['_KEYVALUE']._serialized_end=301
+  _globals['_KEYSTATUS']._serialized_start=303
+  _globals['_KEYSTATUS']._serialized_end=358
+  _globals['_SETREQUEST']._serialized_start=360
+  _globals['_SETREQUEST']._serialized_end=430
+  _globals['_SETRESPONSE']._serialized_start=432
+  _globals['_SETRESPONSE']._serialized_end=507
+  _globals['_GETREQUEST']._serialized_start=509
+  _globals['_GETREQUEST']._serialized_end=534
+  _globals['_GETRESPONSE']._serialized_start=536
+  _globals['_GETRESPONSE']._serialized_end=616
+  _globals['_STATUSRESPONSE']._serialized_start=618
+  _globals['_STATUSRESPONSE']._serialized_end=689
 # @@protoc_insertion_point(module_scope)

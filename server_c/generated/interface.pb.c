@@ -12,10 +12,19 @@ PB_BIND(Message, Message, AUTO)
 PB_BIND(KeyValue, KeyValue, AUTO)
 
 
+PB_BIND(KeyStatus, KeyStatus, AUTO)
+
+
 PB_BIND(SetRequest, SetRequest, AUTO)
 
 
+PB_BIND(SetResponse, SetResponse, AUTO)
+
+
 PB_BIND(GetRequest, GetRequest, AUTO)
+
+
+PB_BIND(GetResponse, GetResponse, AUTO)
 
 
 PB_BIND(StatusResponse, StatusResponse, AUTO)

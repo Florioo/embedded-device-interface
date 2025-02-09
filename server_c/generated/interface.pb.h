@@ -13,25 +13,52 @@
 typedef enum _StatusCodeEnum {
     StatusCodeEnum_SUCCESS = 0,
     StatusCodeEnum_GENERAL_ERROR = -1,
-    StatusCodeEnum_PARAMETER_NOT_FOUND = -2
+    StatusCodeEnum_PARAMETER_NOT_FOUND = -2,
+    StatusCodeEnum_ODIN_ERROR = -9,
+    StatusCodeEnum_ODIN_ERROR_NO_PARAMETER = -10,
+    StatusCodeEnum_ODIN_ERROR_INVALID_ARGUMENT = -11,
+    StatusCodeEnum_ODIN_ERROR_PARAMETER_NOT_FOUND = -12,
+    StatusCodeEnum_ODIN_ERROR_SIZE_MISMATCH = -13,
+    StatusCodeEnum_ODIN_ERROR_BUFFER_TOO_SMALL = -14,
+    StatusCodeEnum_ODIN_ERROR_PERMISSION_DENIED = -15,
+    StatusCodeEnum_ODIN_ERROR_UNSUPPORTED_FORMAT = -16,
+    StatusCodeEnum_ODIN_ERROR_NOT_SUPPORTED = -17,
+    StatusCodeEnum_ODIN_ERROR_FILE_NOT_FOUND = -18,
+    StatusCodeEnum_ODIN_ERROR_VALIDATION = -19
 } StatusCodeEnum;
 
 /* Struct definitions */
 typedef PB_BYTES_ARRAY_T(64) KeyValue_value_t;
 typedef struct _KeyValue {
     uint32_t key;
-    /* Variable lengtj byes max 64 */
     KeyValue_value_t value;
 } KeyValue;
 
+typedef struct _KeyStatus {
+    uint32_t key;
+    StatusCodeEnum code;
+} KeyStatus;
+
 typedef struct _SetRequest {
-    pb_callback_t key_values;
+    pb_callback_t key_value_pairs;
+    bool has_ack_required;
+    bool ack_required; /* If true, the server will send a response */
 } SetRequest;
 
+typedef struct _SetResponse {
+    bool success; /* If all write operations are successful, this will be set to true */
+    pb_size_t key_status_pairs_count;
+    KeyStatus key_status_pairs[16];
+} SetResponse;
+
 typedef struct _GetRequest {
-    pb_size_t keys_count;
-    uint32_t keys[16];
+    uint32_t key;
 } GetRequest;
+
+typedef struct _GetResponse {
+    pb_callback_t key_value_pairs;
+    StatusCodeEnum code; /* If any read operation fails, this will be set to the error code */
+} GetResponse;
 
 typedef struct _StatusResponse {
     StatusCodeEnum code;
@@ -46,6 +73,8 @@ typedef struct _Message {
         SetRequest set_request;
         GetRequest get_request;
         StatusResponse status_response; /* Error response */
+        SetResponse set_response;
+        GetResponse get_response;
     } content;
 } Message;
 
@@ -55,13 +84,18 @@ extern "C" {
 #endif
 
 /* Helper constants for enums */
-#define _StatusCodeEnum_MIN StatusCodeEnum_PARAMETER_NOT_FOUND
+#define _StatusCodeEnum_MIN StatusCodeEnum_ODIN_ERROR_VALIDATION
 #define _StatusCodeEnum_MAX StatusCodeEnum_SUCCESS
 #define _StatusCodeEnum_ARRAYSIZE ((StatusCodeEnum)(StatusCodeEnum_SUCCESS+1))
 
 
 
+#define KeyStatus_code_ENUMTYPE StatusCodeEnum
 
+
+
+
+#define GetResponse_code_ENUMTYPE StatusCodeEnum
 
 #define StatusResponse_code_ENUMTYPE StatusCodeEnum
 
@@ -69,36 +103,55 @@ extern "C" {
 /* Initializer values for message structs */
 #define Message_init_default                     {{{NULL}, NULL}, 0, {SetRequest_init_default}}
 #define KeyValue_init_default                    {0, {0, {0}}}
-#define SetRequest_init_default                  {{{NULL}, NULL}}
-#define GetRequest_init_default                  {0, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}}
+#define KeyStatus_init_default                   {0, _StatusCodeEnum_MIN}
+#define SetRequest_init_default                  {{{NULL}, NULL}, false, 0}
+#define SetResponse_init_default                 {0, 0, {KeyStatus_init_default, KeyStatus_init_default, KeyStatus_init_default, KeyStatus_init_default, KeyStatus_init_default, KeyStatus_init_default, KeyStatus_init_default, KeyStatus_init_default, KeyStatus_init_default, KeyStatus_init_default, KeyStatus_init_default, KeyStatus_init_default, KeyStatus_init_default, KeyStatus_init_default, KeyStatus_init_default, KeyStatus_init_default}}
+#define GetRequest_init_default                  {0}
+#define GetResponse_init_default                 {{{NULL}, NULL}, _StatusCodeEnum_MIN}
 #define StatusResponse_init_default              {_StatusCodeEnum_MIN, false, ""}
 #define Message_init_zero                        {{{NULL}, NULL}, 0, {SetRequest_init_zero}}
 #define KeyValue_init_zero                       {0, {0, {0}}}
-#define SetRequest_init_zero                     {{{NULL}, NULL}}
-#define GetRequest_init_zero                     {0, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}}
+#define KeyStatus_init_zero                      {0, _StatusCodeEnum_MIN}
+#define SetRequest_init_zero                     {{{NULL}, NULL}, false, 0}
+#define SetResponse_init_zero                    {0, 0, {KeyStatus_init_zero, KeyStatus_init_zero, KeyStatus_init_zero, KeyStatus_init_zero, KeyStatus_init_zero, KeyStatus_init_zero, KeyStatus_init_zero, KeyStatus_init_zero, KeyStatus_init_zero, KeyStatus_init_zero, KeyStatus_init_zero, KeyStatus_init_zero, KeyStatus_init_zero, KeyStatus_init_zero, KeyStatus_init_zero, KeyStatus_init_zero}}
+#define GetRequest_init_zero                     {0}
+#define GetResponse_init_zero                    {{{NULL}, NULL}, _StatusCodeEnum_MIN}
 #define StatusResponse_init_zero                 {_StatusCodeEnum_MIN, false, ""}
 
 /* Field tags (for use in manual encoding/decoding) */
 #define KeyValue_key_tag                         1
 #define KeyValue_value_tag                       2
-#define SetRequest_key_values_tag                1
-#define GetRequest_keys_tag                      1
+#define KeyStatus_key_tag                        1
+#define KeyStatus_code_tag                       2
+#define SetRequest_key_value_pairs_tag           1
+#define SetRequest_ack_required_tag              2
+#define SetResponse_success_tag                  1
+#define SetResponse_key_status_pairs_tag         2
+#define GetRequest_key_tag                       1
+#define GetResponse_key_value_pairs_tag          1
+#define GetResponse_code_tag                     2
 #define StatusResponse_code_tag                  1
 #define StatusResponse_message_tag               2
 #define Message_set_request_tag                  1
 #define Message_get_request_tag                  2
 #define Message_status_response_tag              25
+#define Message_set_response_tag                 51
+#define Message_get_response_tag                 52
 
 /* Struct field encoding specification for nanopb */
 #define Message_FIELDLIST(X, a) \
 X(a, STATIC,   ONEOF,    MSG_W_CB, (content,set_request,content.set_request),   1) \
 X(a, STATIC,   ONEOF,    MSG_W_CB, (content,get_request,content.get_request),   2) \
-X(a, STATIC,   ONEOF,    MSG_W_CB, (content,status_response,content.status_response),  25)
+X(a, STATIC,   ONEOF,    MSG_W_CB, (content,status_response,content.status_response),  25) \
+X(a, STATIC,   ONEOF,    MSG_W_CB, (content,set_response,content.set_response),  51) \
+X(a, STATIC,   ONEOF,    MSG_W_CB, (content,get_response,content.get_response),  52)
 #define Message_CALLBACK NULL
 #define Message_DEFAULT NULL
 #define Message_content_set_request_MSGTYPE SetRequest
 #define Message_content_get_request_MSGTYPE GetRequest
 #define Message_content_status_response_MSGTYPE StatusResponse
+#define Message_content_set_response_MSGTYPE SetResponse
+#define Message_content_get_response_MSGTYPE GetResponse
 
 #define KeyValue_FIELDLIST(X, a) \
 X(a, STATIC,   REQUIRED, UINT32,   key,               1) \
@@ -106,16 +159,37 @@ X(a, STATIC,   REQUIRED, BYTES,    value,             2)
 #define KeyValue_CALLBACK NULL
 #define KeyValue_DEFAULT NULL
 
+#define KeyStatus_FIELDLIST(X, a) \
+X(a, STATIC,   REQUIRED, UINT32,   key,               1) \
+X(a, STATIC,   REQUIRED, ENUM,     code,              2)
+#define KeyStatus_CALLBACK NULL
+#define KeyStatus_DEFAULT NULL
+
 #define SetRequest_FIELDLIST(X, a) \
-X(a, CALLBACK, REPEATED, MESSAGE,  key_values,        1)
+X(a, CALLBACK, REPEATED, MESSAGE,  key_value_pairs,   1) \
+X(a, STATIC,   OPTIONAL, BOOL,     ack_required,      2)
 #define SetRequest_CALLBACK pb_default_field_callback
 #define SetRequest_DEFAULT NULL
-#define SetRequest_key_values_MSGTYPE KeyValue
+#define SetRequest_key_value_pairs_MSGTYPE KeyValue
+
+#define SetResponse_FIELDLIST(X, a) \
+X(a, STATIC,   REQUIRED, BOOL,     success,           1) \
+X(a, STATIC,   REPEATED, MESSAGE,  key_status_pairs,   2)
+#define SetResponse_CALLBACK NULL
+#define SetResponse_DEFAULT NULL
+#define SetResponse_key_status_pairs_MSGTYPE KeyStatus
 
 #define GetRequest_FIELDLIST(X, a) \
-X(a, STATIC,   REPEATED, UINT32,   keys,              1)
+X(a, STATIC,   REQUIRED, UINT32,   key,               1)
 #define GetRequest_CALLBACK NULL
 #define GetRequest_DEFAULT NULL
+
+#define GetResponse_FIELDLIST(X, a) \
+X(a, CALLBACK, REPEATED, MESSAGE,  key_value_pairs,   1) \
+X(a, STATIC,   REQUIRED, ENUM,     code,              2)
+#define GetResponse_CALLBACK pb_default_field_callback
+#define GetResponse_DEFAULT NULL
+#define GetResponse_key_value_pairs_MSGTYPE KeyValue
 
 #define StatusResponse_FIELDLIST(X, a) \
 X(a, STATIC,   REQUIRED, ENUM,     code,              1) \
@@ -125,23 +199,32 @@ X(a, STATIC,   OPTIONAL, STRING,   message,           2)
 
 extern const pb_msgdesc_t Message_msg;
 extern const pb_msgdesc_t KeyValue_msg;
+extern const pb_msgdesc_t KeyStatus_msg;
 extern const pb_msgdesc_t SetRequest_msg;
+extern const pb_msgdesc_t SetResponse_msg;
 extern const pb_msgdesc_t GetRequest_msg;
+extern const pb_msgdesc_t GetResponse_msg;
 extern const pb_msgdesc_t StatusResponse_msg;
 
 /* Defines for backwards compatibility with code written before nanopb-0.4.0 */
 #define Message_fields &Message_msg
 #define KeyValue_fields &KeyValue_msg
+#define KeyStatus_fields &KeyStatus_msg
 #define SetRequest_fields &SetRequest_msg
+#define SetResponse_fields &SetResponse_msg
 #define GetRequest_fields &GetRequest_msg
+#define GetResponse_fields &GetResponse_msg
 #define StatusResponse_fields &StatusResponse_msg
 
 /* Maximum encoded size of messages (where known) */
 /* Message_size depends on runtime parameters */
 /* SetRequest_size depends on runtime parameters */
-#define GetRequest_size                          96
-#define INTERFACE_PB_H_MAX_SIZE                  GetRequest_size
+/* GetResponse_size depends on runtime parameters */
+#define GetRequest_size                          6
+#define INTERFACE_PB_H_MAX_SIZE                  SetResponse_size
+#define KeyStatus_size                           17
 #define KeyValue_size                            72
+#define SetResponse_size                         306
 #define StatusResponse_size                      76
 
 #ifdef __cplusplus

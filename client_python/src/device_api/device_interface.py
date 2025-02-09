@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import List
 from eros import (
     ErosInterface,
@@ -11,6 +12,7 @@ from google.protobuf.message import Message
 from .generated import interface_pb2
 import asyncio
 from .models import RGBLed, Servo, GenericModel
+
 
 AUTH_INFO = 0x00010000
 RGB_LED = 0x0A000000
@@ -42,13 +44,21 @@ class DeviceInterface:
             )
         )
 
-    async def set_values(
-        self, values: list[GenericModel] | GenericModel, expect_response: bool = False
+    async def set(
+        self,
+        values: list[GenericModel] | GenericModel | Enum,
+        expect_response: bool = False,
     ) -> interface_pb2.Message:
+        
+        if isinstance(values, Enum):
+            values = values.value
+            assert isinstance(values, GenericModel)
+
         if isinstance(values, GenericModel):
             data = {values.ID: values.encode()}
         else:
             data = {value.ID: value.encode() for value in values}
+
         return await self.set_request(data, expect_response)
 
     async def set_request(
@@ -56,10 +66,11 @@ class DeviceInterface:
     ) -> interface_pb2.Message:
         request = interface_pb2.Message(
             set_request=interface_pb2.SetRequest(
-                key_values=[
+                ack_required=expect_response,
+                key_value_pairs=[
                     interface_pb2.KeyValue(key=key, value=value)
                     for key, value in data.items()
-                ]
+                ],
             )
         )
         if expect_response:

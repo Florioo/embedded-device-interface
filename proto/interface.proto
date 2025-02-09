@@ -6,24 +6,40 @@ message Message{
 
     oneof content{
         SetRequest set_request = 1;
+        SetResponse set_response = 51;
         GetRequest get_request = 2;
+        GetResponse get_response = 52;
 
         StatusResponse status_response = 25; //Error response
     }
 }
 
-
 message KeyValue{
     required uint32 key = 1;
-    // Variable lengtj byes max 64
     required bytes value = 2 [(nanopb).max_size = 64];
 }
+message KeyStatus{
+    required uint32 key = 1;
+    required StatusCodeEnum code = 2;
+}
+
 message SetRequest{
-    repeated KeyValue key_values = 1;
+    repeated KeyValue key_value_pairs = 1;
+    optional bool ack_required = 2;    //If true, the server will send a response
+}
+
+message SetResponse{
+    required bool success = 1; //If all write operations are successful, this will be set to true
+    repeated KeyStatus key_status_pairs = 2 [(nanopb).max_count = 16];
 }
 
 message GetRequest{
-    repeated uint32 keys = 1 [(nanopb).max_count = 16];
+    required uint32 key = 1;
+}
+
+message GetResponse{
+    required StatusCodeEnum code = 2; //If any read operation fails, this will be set to the error code
+    repeated KeyValue key_value_pairs = 1;
 }
 
 message StatusResponse{
@@ -35,5 +51,16 @@ enum StatusCodeEnum{
     SUCCESS = 0;
     GENERAL_ERROR = -1;
     PARAMETER_NOT_FOUND = -2;
-    
+
+    ODIN_ERROR = -9;
+    ODIN_ERROR_NO_PARAMETER = -10;
+    ODIN_ERROR_INVALID_ARGUMENT = -11;
+    ODIN_ERROR_PARAMETER_NOT_FOUND = -12;
+    ODIN_ERROR_SIZE_MISMATCH = -13;
+    ODIN_ERROR_BUFFER_TOO_SMALL = -14;
+    ODIN_ERROR_PERMISSION_DENIED = -15;
+    ODIN_ERROR_UNSUPPORTED_FORMAT = -16;
+    ODIN_ERROR_NOT_SUPPORTED = -17;
+    ODIN_ERROR_FILE_NOT_FOUND = -18;
+    ODIN_ERROR_VALIDATION = -19;
 }

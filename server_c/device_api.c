@@ -13,7 +13,8 @@
 
 static const char *TAG = "device_api";
 
-typedef struct {
+typedef struct
+{
   Message *response;
   eros_id_t source;
 } message_callback_data_t;
@@ -26,14 +27,16 @@ static bool pre_process_callback(pb_istream_t *stream, const pb_field_t *field,
 
 const ODIN_parameter_group_t *device_api_odin_group;
 
-void device_api_init(ODIN_parameter_group_t *group) {
+void device_api_init(ODIN_parameter_group_t *group)
+{
   device_api_odin_group = group;
 }
 
 int handle_set_request(SetRequest *request, Message *response);
 
 int device_api_process_stream(eros_id_t source, pb_istream_t *input_stream,
-                              pb_ostream_t *output_stream) {
+                              pb_ostream_t *output_stream)
+{
 
   Message response = Message_init_zero;
   int status_code = StatusCodeEnum_SUCCESS;
@@ -51,17 +54,27 @@ int device_api_process_stream(eros_id_t source, pb_istream_t *input_stream,
   status_code = decode_request(input_stream, &request_message, &callback_data);
 
   // If we encoded a message we can early return
-  if (request_message.which_content == 0) {
-    return StatusCodeEnum_SUCCESS;
-  }
 
-  if (status_code != StatusCodeEnum_SUCCESS) {
+  if (status_code != StatusCodeEnum_SUCCESS && request_message.which_content != 0)
+  {
     return encode_response(&response, output_stream);
   }
 
-  switch (request_message.which_content) {
+  switch (request_message.which_content)
+  {
+
   case Message_set_request_tag:
-    // No handling needed here
+    // Remove response if not ack is needed
+
+    if (!request_message.content.set_request.ack_required)
+    {
+      // If error, we will send the response with the error code
+      if (response.which_content == Message_set_response_tag && response.content.set_response.success)
+      {
+        response.which_content = 0;
+      }
+    }
+
     break;
 
   case Message_get_request_tag:
@@ -74,7 +87,8 @@ int device_api_process_stream(eros_id_t source, pb_istream_t *input_stream,
     return StatusCodeEnum_GENERAL_ERROR;
   }
 
-  if (status_code != StatusCodeEnum_SUCCESS) {
+  if (status_code != StatusCodeEnum_SUCCESS)
+  {
     LOG_ERR(TAG, "Error processing message %d", status_code);
     return status_code;
   }
@@ -84,18 +98,21 @@ int device_api_process_stream(eros_id_t source, pb_istream_t *input_stream,
 }
 
 static bool pre_process_callback(pb_istream_t *stream, const pb_field_t *field,
-                                 void **arg) {
+                                 void **arg)
+{
   Message *message = field->message;
   message_callback_data_t *callback_data = *arg;
   int status_code = StatusCodeEnum_SUCCESS;
 
-  switch (message->which_content) {
+  switch (message->which_content)
+  {
   case Message_set_request_tag:
     status_code =
         handle_set_request((SetRequest *)field->pData, callback_data->response);
   }
 
-  if (status_code != StatusCodeEnum_SUCCESS) {
+  if (status_code != StatusCodeEnum_SUCCESS)
+  {
     LOG_ERR(TAG, "Error processing message %d", status_code);
     return false;
   }
@@ -104,7 +121,8 @@ static bool pre_process_callback(pb_istream_t *stream, const pb_field_t *field,
 
 int device_api_process(eros_id_t source, const uint8_t *buffer, size_t size,
                        uint8_t *output_buffer, size_t output_size,
-                       size_t *bytes_written) {
+                       size_t *bytes_written)
+{
 
 #if 1
   print_hexdump(ANSI_BBLU "Request" ANSI_RESET, buffer, size);
@@ -118,9 +136,12 @@ int device_api_process(eros_id_t source, const uint8_t *buffer, size_t size,
 
   // Print output
 #if 1
-  if (output_stream.bytes_written == 0) {
+  if (output_stream.bytes_written == 0)
+  {
     printf(ANSI_BBLK "No response" ANSI_RESET "\n");
-  } else {
+  }
+  else
+  {
     print_hexdump(ANSI_BGRN "Response" ANSI_RESET, output_buffer,
                   output_stream.bytes_written);
   }
@@ -130,8 +151,10 @@ int device_api_process(eros_id_t source, const uint8_t *buffer, size_t size,
   return ret;
 }
 
-static int encode_response(Message *response, pb_ostream_t *output_stream) {
-  if (!pb_encode(output_stream, Message_fields, response)) {
+static int encode_response(Message *response, pb_ostream_t *output_stream)
+{
+  if (!pb_encode(output_stream, Message_fields, response))
+  {
     LOG_ERR(TAG, "Error encoding response: %s", PB_GET_ERROR(output_stream));
     return StatusCodeEnum_GENERAL_ERROR;
   }
@@ -139,8 +162,10 @@ static int encode_response(Message *response, pb_ostream_t *output_stream) {
 }
 
 static int decode_request(pb_istream_t *input_stream, Message *request_message,
-                          message_callback_data_t *callback_data) {
-  if (!pb_decode(input_stream, Message_fields, request_message)) {
+                          message_callback_data_t *callback_data)
+{
+  if (!pb_decode(input_stream, Message_fields, request_message))
+  {
     LOG_ERR(TAG, "Error decoding request_message: %s",
             PB_GET_ERROR(input_stream));
     return StatusCodeEnum_GENERAL_ERROR;

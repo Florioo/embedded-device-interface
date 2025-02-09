@@ -2,6 +2,7 @@ from pydantic import BaseModel
 import struct
 import colorsys
 from abc import ABC, abstractmethod
+from enum import Enum
 
 AUTH_INFO = 0x00010000
 RGB_LED = 0x0A000000
@@ -31,6 +32,7 @@ class RGBLed(GenericModel):
     green: int
     blue: int
 
+
     def encode(self) -> bytes:
         return struct.pack("BBB", self.red, self.green, self.blue)
 
@@ -44,7 +46,12 @@ class RGBLed(GenericModel):
             red=int(r * 255), green=int(g * 255), blue=int(b * 255)
         )
 
-
+class RGBColors(Enum):
+    RED = RGBLed(red=255, green=0, blue=0)
+    GREEN = RGBLed(red=0, green=255, blue=0)
+    BLUE = RGBLed(red=0, green=0, blue=255)
+    INVALID_BLUE = RGBLed(red=0, green=0, blue=255, ID=0x0A000001)
+    
 class Servo(GenericModel):
     value: int
 
