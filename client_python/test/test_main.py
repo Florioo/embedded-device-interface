@@ -4,8 +4,9 @@ from eros.transport.websocket import WebsocketInterface
 from eros.transport.udp import UDPInterface
 from eros import ErosInterface
 from device_api import DeviceInterface
+from device_api.models import RGBLed, Servo
 import time
-
+from pydantic import BaseModel
 
 async def main():
     # async with UDPInterface("udp://192.168.1.181:1234", debug=True) as transport:

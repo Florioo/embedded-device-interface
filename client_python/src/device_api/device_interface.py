@@ -1,8 +1,25 @@
-from eros import ErosInterface, PacketTransport, ErosPacketTransport
+from typing import List
+from eros import (
+    ErosInterface,
+    PacketTransport,
+    ErosPacketTransport,
+    ErosMessage,
+    ErosTarget,
+)
 from google.protobuf.message import Message
 
 from .generated import interface_pb2
 import asyncio
+from .models import RGBLed, Servo, GenericModel
+
+AUTH_INFO = 0x00010000
+RGB_LED = 0x0A000000
+SERVO_FRONT_LEFT = 0x01010000
+SERVO_FRONT_RIGHT = 0x01020000
+SERVO_BACK_LEFT = 0x01030000
+SERVO_BACK_RIGHT = 0x01040000
+SERVO_BACK_CENTER_LEFT = 0x01050000
+SERVO_BACK_CENTER_RIGHT = 0x01060000
 
 
 class DeviceInterface:
@@ -20,12 +37,23 @@ class DeviceInterface:
     ):
         return cls(
             eros.get_transport(
-                source=ErosInterface.ErosTarget(id=source_id, realm=source_realm),
-                target=ErosInterface.ErosTarget(id=target_id, realm=target_realm),
+                source=ErosTarget(id=source_id, realm=source_realm),
+                target=ErosTarget(id=target_id, realm=target_realm),
             )
         )
 
-    async def set_request(self, data: dict[int, bytes]):
+    async def set_values(
+        self, values: list[GenericModel] | GenericModel, expect_response: bool = False
+    ) -> interface_pb2.Message:
+        if isinstance(values, GenericModel):
+            data = {values.ID: values.encode()}
+        else:
+            data = {value.ID: value.encode() for value in values}
+        return await self.set_request(data, expect_response)
+
+    async def set_request(
+        self, data: dict[int, bytes], expect_response: bool = False
+    ) -> interface_pb2.Message:
         request = interface_pb2.Message(
             set_request=interface_pb2.SetRequest(
                 key_values=[
@@ -34,7 +62,16 @@ class DeviceInterface:
                 ]
             )
         )
-        return await self.send_request(request)
+        if expect_response:
+            return await self.send_request(request)
+        else:
+            return await self.send_request_no_response(request)
+
+    async def send_request_no_response(
+        self, message: interface_pb2.Message
+    ) -> interface_pb2.Message:
+        packed = message.SerializeToString()
+        await self.packet_transport.send(packed)
 
     async def send_request(
         self, message: interface_pb2.Message

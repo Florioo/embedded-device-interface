@@ -106,7 +106,7 @@ int device_api_process(eros_id_t source, const uint8_t *buffer, size_t size,
                        uint8_t *output_buffer, size_t output_size,
                        size_t *bytes_written) {
 
-#if 0
+#if 1
   print_hexdump(ANSI_BBLU "Request" ANSI_RESET, buffer, size);
 #endif
 
@@ -117,9 +117,9 @@ int device_api_process(eros_id_t source, const uint8_t *buffer, size_t size,
   int ret = device_api_process_stream(source, &input_stream, &output_stream);
 
   // Print output
-#if 0
+#if 1
   if (output_stream.bytes_written == 0) {
-    printf(ANSI_BRED "No response" ANSI_RESET "\n");
+    printf(ANSI_BBLK "No response" ANSI_RESET "\n");
   } else {
     print_hexdump(ANSI_BGRN "Response" ANSI_RESET, output_buffer,
                   output_stream.bytes_written);
