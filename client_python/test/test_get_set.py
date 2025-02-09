@@ -36,28 +36,33 @@ async def main():
         )
 
         interface = DeviceInterface(endpoint)
-
-
-        result = await interface.set(
+        await interface.set(
             RGBColors.RED,
             expect_response=True,
         )
 
-        await interface.set(
-            RGBColors.INVALID_BLUE,
-            expect_response=True,
-        )
+        received = await interface.get([RGB_LED, SERVO_FRONT_RIGHT,0])
+        print(received)
+        # result = await interface.set(
+        #     RGBColors.RED,
+        #     expect_response=True,
+        # )
 
-        await interface.set(
-            RGBColors.GREEN,
-            expect_response=False,
-        )
+        # await interface.set(
+        #     RGBColors.INVALID_BLUE,
+        #     expect_response=True,
+        # )
 
-        await interface.set(
-            RGBColors.INVALID_BLUE,
-            expect_response=False,
-        )
-        
+        # await interface.set(
+        #     RGBColors.GREEN,
+        #     expect_response=False,
+        # )
+
+        # await interface.set(
+        #     RGBColors.INVALID_BLUE,
+        #     expect_response=False,
+        # )
+
         await asyncio.sleep(0.5)
 
         await eros.stop()

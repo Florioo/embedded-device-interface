@@ -85,18 +85,28 @@ class SetResponse(_message.Message):
     def __init__(self, success: bool = ..., key_status_pairs: _Optional[_Iterable[_Union[KeyStatus, _Mapping]]] = ...) -> None: ...
 
 class GetRequest(_message.Message):
-    __slots__ = ("key",)
+    __slots__ = ("keys",)
+    KEYS_FIELD_NUMBER: _ClassVar[int]
+    keys: _containers.RepeatedScalarFieldContainer[int]
+    def __init__(self, keys: _Optional[_Iterable[int]] = ...) -> None: ...
+
+class KeyValueStatus(_message.Message):
+    __slots__ = ("key", "code", "value")
     KEY_FIELD_NUMBER: _ClassVar[int]
+    CODE_FIELD_NUMBER: _ClassVar[int]
+    VALUE_FIELD_NUMBER: _ClassVar[int]
     key: int
-    def __init__(self, key: _Optional[int] = ...) -> None: ...
+    code: StatusCodeEnum
+    value: bytes
+    def __init__(self, key: _Optional[int] = ..., code: _Optional[_Union[StatusCodeEnum, str]] = ..., value: _Optional[bytes] = ...) -> None: ...
 
 class GetResponse(_message.Message):
-    __slots__ = ("code", "key_value_pairs")
+    __slots__ = ("code", "key_value_status_pairs")
     CODE_FIELD_NUMBER: _ClassVar[int]
-    KEY_VALUE_PAIRS_FIELD_NUMBER: _ClassVar[int]
+    KEY_VALUE_STATUS_PAIRS_FIELD_NUMBER: _ClassVar[int]
     code: StatusCodeEnum
-    key_value_pairs: _containers.RepeatedCompositeFieldContainer[KeyValue]
-    def __init__(self, code: _Optional[_Union[StatusCodeEnum, str]] = ..., key_value_pairs: _Optional[_Iterable[_Union[KeyValue, _Mapping]]] = ...) -> None: ...
+    key_value_status_pairs: _containers.RepeatedCompositeFieldContainer[KeyValueStatus]
+    def __init__(self, code: _Optional[_Union[StatusCodeEnum, str]] = ..., key_value_status_pairs: _Optional[_Iterable[_Union[KeyValueStatus, _Mapping]]] = ...) -> None: ...
 
 class StatusResponse(_message.Message):
     __slots__ = ("code", "message")

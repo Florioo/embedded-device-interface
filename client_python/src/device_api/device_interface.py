@@ -45,6 +45,21 @@ class DeviceInterface:
             data = {value.ID: value.encode() for value in values}
 
         return await self.set_request(data, expect_response)
+    
+    async def get(
+        self,
+        keys: list[int] | int,
+    ) -> interface_pb2.Message | None:
+        if isinstance(keys, int):
+            keys = [keys]
+
+        request = interface_pb2.Message(
+            get_request=interface_pb2.GetRequest(
+                keys=keys,
+            )
+        )
+        return await self.send_and_receive(request)
+    
 
     async def set_request(
         self, data: dict[int, bytes], expect_response: bool = False

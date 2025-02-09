@@ -10,6 +10,7 @@
 #include "interface.pb.h"
 #include "odin.h"
 #include "srv_logging.h"
+#include "handlers.h"
 
 static const char *TAG = "device_api";
 
@@ -32,7 +33,6 @@ void device_api_init(ODIN_parameter_group_t *group)
   device_api_odin_group = group;
 }
 
-int handle_set_request(SetRequest *request, Message *response);
 
 int device_api_process_stream(eros_id_t source, pb_istream_t *input_stream,
                               pb_ostream_t *output_stream)
@@ -54,47 +54,25 @@ int device_api_process_stream(eros_id_t source, pb_istream_t *input_stream,
   status_code = decode_request(input_stream, &request_message, &callback_data);
 
   // If we encoded a message we can early return
-
   if (status_code != StatusCodeEnum_SUCCESS && request_message.which_content != 0)
   {
     return encode_response(&response, output_stream);
   }
 
-  switch (request_message.which_content)
-  {
+  status_code = post_decode_handlers(&request_message, &response);
 
-  case Message_set_request_tag:
-    // Remove response if not ack is needed
-
-    if (!request_message.content.set_request.ack_required)
-    {
-      // If error, we will send the response with the error code
-      if (response.which_content == Message_set_response_tag && response.content.set_response.success)
-      {
-        response.which_content = 0;
-      }
-    }
-
-    break;
-
-  case Message_get_request_tag:
-    // status_code =
-    // handle_get_request(&request_message.content.get_request, &response);
-    break;
-
-  default:
-    LOG_ERR(TAG, "Unknown message type %d", request_message.which_content);
-    return StatusCodeEnum_GENERAL_ERROR;
-  }
-
-  if (status_code != StatusCodeEnum_SUCCESS)
+  if (status_code != StatusCodeEnum_SUCCESS && request_message.which_content == 0)
   {
     LOG_ERR(TAG, "Error processing message %d", status_code);
     return status_code;
   }
 
   // Encode response
-  return encode_response(&response, output_stream);
+  printf("Encoding response\n");
+  int ret =  encode_response(&response, output_stream);
+  printf("Response encoded\n");
+
+  return ret;
 }
 
 static bool pre_process_callback(pb_istream_t *stream, const pb_field_t *field,
@@ -102,21 +80,10 @@ static bool pre_process_callback(pb_istream_t *stream, const pb_field_t *field,
 {
   Message *message = field->message;
   message_callback_data_t *callback_data = *arg;
-  int status_code = StatusCodeEnum_SUCCESS;
+  // int status_code = StatusCodeEnum_SUCCESS;
+  
+  return pre_decode_handlers(message,field, callback_data->response);
 
-  switch (message->which_content)
-  {
-  case Message_set_request_tag:
-    status_code =
-        handle_set_request((SetRequest *)field->pData, callback_data->response);
-  }
-
-  if (status_code != StatusCodeEnum_SUCCESS)
-  {
-    LOG_ERR(TAG, "Error processing message %d", status_code);
-    return false;
-  }
-  return true;
 }
 
 int device_api_process(eros_id_t source, const uint8_t *buffer, size_t size,

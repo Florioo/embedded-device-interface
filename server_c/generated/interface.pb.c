@@ -24,6 +24,9 @@ PB_BIND(SetResponse, SetResponse, AUTO)
 PB_BIND(GetRequest, GetRequest, AUTO)
 
 
+PB_BIND(KeyValueStatus, KeyValueStatus, AUTO)
+
+
 PB_BIND(GetResponse, GetResponse, AUTO)
 
 

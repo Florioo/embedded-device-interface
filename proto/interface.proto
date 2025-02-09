@@ -34,12 +34,17 @@ message SetResponse{
 }
 
 message GetRequest{
-    required uint32 key = 1;
+    repeated uint32 keys = 1 [(nanopb).max_count = 16];
 }
 
+message KeyValueStatus{
+    required uint32 key = 1;
+    optional StatusCodeEnum code = 2;
+    optional bytes value = 3 [(nanopb).max_size = 64];
+}
 message GetResponse{
     required StatusCodeEnum code = 2; //If any read operation fails, this will be set to the error code
-    repeated KeyValue key_value_pairs = 1;
+    repeated KeyValueStatus key_value_status_pairs = 1;
 }
 
 message StatusResponse{
