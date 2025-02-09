@@ -123,6 +123,6 @@ static bool encode_key_and_value(uint32_t key, uint8_t *value, size_t size, pb_o
     printf("Failed to encode submessage\n");
     return false;
   }
-  printf("Encoded key and value: %ld - len: %d\n", key, size);
+  // printf("Encoded key and value: %ld - len: %d\n", key, size);
   return true;
 }
