@@ -7,8 +7,8 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.12"
-eros = {path = "D:/Projects/raydrive/t0/t0-python-client/eros", develop = true}
 nanopb = "^0.4.9.1"
+eros = "*"
 
 
 [build-system]

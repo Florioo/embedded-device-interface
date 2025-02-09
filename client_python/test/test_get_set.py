@@ -41,7 +41,7 @@ async def main():
             expect_response=True,
         )
 
-        received = await interface.get([RGB_LED, SERVO_FRONT_RIGHT,0])
+        received = await interface.get([RGB_LED, SERVO_FRONT_RIGHT,0,1100,10])
         print(received)
         # result = await interface.set(
         #     RGBColors.RED,

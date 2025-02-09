@@ -12,10 +12,6 @@ NANOPB_DIR = SCRIPT_DIR / "nanopb.proto"
 PY_OUTPUT_DIR = ROOT_DIR / "client_python" / "src" / "device_api" / "generated"
 C_OUTPUT_DIR = ROOT_DIR / "server_c" / "generated"
 
-DOC_DIR = os.path.join(ROOT_DIR, "doc/gen")
-os.makedirs(DOC_DIR, exist_ok=True)
-
-
 def run_command(cmd: str):
     print(f"\n{cmd}\n")
     result = subprocess.run(cmd, shell=True)
