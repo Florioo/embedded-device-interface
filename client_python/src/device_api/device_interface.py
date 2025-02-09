@@ -3,7 +3,7 @@ from typing import List
 from eros import (
     ErosInterface,
     PacketTransport,
-    ErosPacketTransport,
+    ErosEndpoint,
     ErosMessage,
     ErosTarget,
 )
@@ -25,31 +25,16 @@ SERVO_BACK_CENTER_RIGHT = 0x01060000
 
 
 class DeviceInterface:
-    def __init__(self, packet_transport: ErosPacketTransport):
-        self.packet_transport = packet_transport
+    TARGET = ErosTarget(id=6, realm=0)
 
-    @classmethod
-    def from_eros(
-        cls,
-        eros: ErosInterface,
-        source_id: int = 2,
-        source_realm: int = 5,
-        target_id: int = 6,
-        target_realm: int = 0,
-    ):
-        return cls(
-            eros.get_transport(
-                source=ErosTarget(id=source_id, realm=source_realm),
-                target=ErosTarget(id=target_id, realm=target_realm),
-            )
-        )
+    def __init__(self, endpoint: ErosEndpoint):
+        self.endpoint = endpoint
 
     async def set(
         self,
         values: list[GenericModel] | GenericModel | Enum,
         expect_response: bool = False,
-    ) -> interface_pb2.Message:
-        
+    ) -> interface_pb2.Message | None:
         if isinstance(values, Enum):
             values = values.value
             assert isinstance(values, GenericModel)
@@ -63,7 +48,7 @@ class DeviceInterface:
 
     async def set_request(
         self, data: dict[int, bytes], expect_response: bool = False
-    ) -> interface_pb2.Message:
+    ) -> interface_pb2.Message | None:
         request = interface_pb2.Message(
             set_request=interface_pb2.SetRequest(
                 ack_required=expect_response,
@@ -74,40 +59,51 @@ class DeviceInterface:
             )
         )
         if expect_response:
-            return await self.send_request(request)
+            return await self.send_and_receive(request)
         else:
-            return await self.send_request_no_response(request)
+            return await self.send(request)
 
-    async def send_request_no_response(
+    async def send_and_receive(
         self, message: interface_pb2.Message
     ) -> interface_pb2.Message:
         packed = message.SerializeToString()
-        await self.packet_transport.send(packed)
+        result = await self.endpoint.send_and_receive(packed)
+        response = interface_pb2.Message()
+        response.ParseFromString(result)
+        return response
 
-    async def send_request(
-        self, message: interface_pb2.Message
-    ) -> interface_pb2.Message:
+    async def send(self, message: interface_pb2.Message) -> None:
         packed = message.SerializeToString()
+        await self.endpoint.send(packed)
 
-        max_retries = 10
-        timeout = 0.3  # seconds
+    # async def send_request_no_response(
+    #     self, message: interface_pb2.Message
+    # ) -> interface_pb2.Message:
+    #     packed = message.SerializeToString()
+    #     await self.endpoint.send(packed)
 
-        for attempt in range(max_retries):
-            try:
-                await asyncio.wait_for(self.packet_transport.send(packed), timeout)
+    # async def send_request(
+    #     self, message: interface_pb2.Message
+    # ) -> interface_pb2.Message:
+    #     packed = message.SerializeToString()
 
-                # TODO: Fix the list, it should conceptually not be a list here since we are only expecting one message (the first)
-                result = await asyncio.wait_for(
-                    self.packet_transport.receive(), timeout
-                )
+    #     max_retries = 10
+    #     timeout = 0.3  # seconds
 
-                # Serialize the result
-                response = interface_pb2.Message()
-                response.ParseFromString(result[0])
+    #     for attempt in range(max_retries):
+    #         try:
+    #             await asyncio.wait_for(self.endpoint.send(packed), timeout)
 
-                return response
-            except asyncio.TimeoutError:
-                if attempt < max_retries - 1:
-                    continue  # Retry
-                else:
-                    raise  # Exhausted retries
+    #             # TODO: Fix the list, it should conceptually not be a list here since we are only expecting one message (the first)
+    #             result = await asyncio.wait_for(self.endpoint.receive(), timeout)
+
+    #             # Serialize the result
+    #             response = interface_pb2.Message()
+    #             response.ParseFromString(result[0])
+
+    #             return response
+    #         except asyncio.TimeoutError:
+    #             if attempt < max_retries - 1:
+    #                 continue  # Retry
+    #             else:
+    #                 raise  # Exhausted retries

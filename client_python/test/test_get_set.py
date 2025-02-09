@@ -1,17 +1,11 @@
 import asyncio
-
-from annotated_types import T
-from eros.transport.websocket import WebsocketInterface
+from eros import ErosInterface, ErosEndpoint, ErosTarget
 from eros.transport.udp import UDPInterface
-from eros import ErosInterface
-from device_api import DeviceInterface
-import time
+from eros.transport.websocket import WebsocketInterface
 from pydantic import BaseModel
-import struct
-import colorsys
-from device_api.models import RGBLed, Servo
 
-from device_api.models import RGBLed,RGBColors
+from device_api import DeviceInterface
+from device_api.models import RGBColors, RGBLed, Servo
 
 AUTH_INFO = 0x00010000
 RGB_LED = 0x0A000000
@@ -29,35 +23,43 @@ async def set_color(interface: DeviceInterface, led: RGBLed):
 
 
 async def main():
-    
     async with UDPInterface("udp://192.168.1.181:1234", debug=False) as transport:
         # async with WebsocketInterface("ws://192.168.1.181/ws", debug=True) as transport:
 
         eros = ErosInterface(transport, debug=True)
         await eros.start()
-        interface = DeviceInterface.from_eros(eros, source_realm=6)
 
-        await interface.set(
+        endpoint = ErosEndpoint(
+            eros=eros,
+            source=ErosTarget(id=2, realm=transport.REALM),
+            target=DeviceInterface.TARGET,
+        )
+
+        interface = DeviceInterface(endpoint)
+
+
+        result = await interface.set(
             RGBColors.RED,
             expect_response=True,
         )
-        
+
         await interface.set(
             RGBColors.INVALID_BLUE,
             expect_response=True,
         )
-        
 
         await interface.set(
             RGBColors.GREEN,
             expect_response=False,
         )
+
         await interface.set(
             RGBColors.INVALID_BLUE,
             expect_response=False,
         )
         
-        await asyncio.sleep(1)
+        await asyncio.sleep(0.5)
+
         await eros.stop()
 
 
