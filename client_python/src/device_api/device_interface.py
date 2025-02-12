@@ -9,16 +9,6 @@ from .generated import interface_pb2
 from .models import GenericModel
 
 
-AUTH_INFO = 0x00010000
-RGB_LED = 0x0A000000
-SERVO_FRONT_LEFT = 0x01010000
-SERVO_FRONT_RIGHT = 0x01020000
-SERVO_BACK_LEFT = 0x01030000
-SERVO_BACK_RIGHT = 0x01040000
-SERVO_BACK_CENTER_LEFT = 0x01050000
-SERVO_BACK_CENTER_RIGHT = 0x01060000
-
-
 class DeviceInterface:
     TARGET = ErosTarget(id=6, realm=0)
 
@@ -92,36 +82,3 @@ class DeviceInterface:
     async def send(self, message: interface_pb2.Message) -> None:
         packed = message.SerializeToString()
         await self.endpoint.send(packed)
-
-    # async def send_request_no_response(
-    #     self, message: interface_pb2.Message
-    # ) -> interface_pb2.Message:
-    #     packed = message.SerializeToString()
-    #     await self.endpoint.send(packed)
-
-    # async def send_request(
-    #     self, message: interface_pb2.Message
-    # ) -> interface_pb2.Message:
-    #     packed = message.SerializeToString()
-
-    #     max_retries = 10
-    #     timeout = 0.3  # seconds
-
-    #     for attempt in range(max_retries):
-    #         try:
-    #             await asyncio.wait_for(self.endpoint.send(packed), timeout)
-
-    #             # TODO: Fix the list, it should conceptually not be a list here
-    # since we are only expecting one message (the first)
-    #             result = await asyncio.wait_for(self.endpoint.receive(), timeout)
-
-    #             # Serialize the result
-    #             response = interface_pb2.Message()
-    #             response.ParseFromString(result[0])
-
-    #             return response
-    #         except asyncio.TimeoutError:
-    #             if attempt < max_retries - 1:
-    #                 continue  # Retry
-    #             else:
-    #                 raise  # Exhausted retries

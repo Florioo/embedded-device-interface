@@ -1,17 +1,9 @@
-from pydantic import BaseModel
-import struct
 import colorsys
+import struct
 from abc import ABC, abstractmethod
 from enum import Enum
 
-AUTH_INFO = 0x00010000
-RGB_LED = 0x0A000000
-SERVO_FRONT_LEFT = 0x01010000
-SERVO_FRONT_RIGHT = 0x01020000
-SERVO_BACK_LEFT = 0x01030000
-SERVO_BACK_RIGHT = 0x01040000
-SERVO_BACK_CENTER_LEFT = 0x01050000
-SERVO_BACK_CENTER_RIGHT = 0x01060000
+from pydantic import BaseModel
 
 
 class GenericModel(BaseModel, ABC):
@@ -22,12 +14,11 @@ class GenericModel(BaseModel, ABC):
     @abstractmethod
     def decode(self, data: bytes):
         pass
-
-    ID: int
+    
+    ID: int= 0
 
 
 class RGBLed(GenericModel):
-    ID: int = RGB_LED
     red: int
     green: int
     blue: int
@@ -48,7 +39,6 @@ class RGBColors(Enum):
     RED = RGBLed(red=255, green=0, blue=0)
     GREEN = RGBLed(red=0, green=255, blue=0)
     BLUE = RGBLed(red=0, green=0, blue=255)
-    INVALID_BLUE = RGBLed(red=0, green=0, blue=255, ID=0x0A000001)
     WHITE = RGBLed(red=255, green=255, blue=255)
 
 
