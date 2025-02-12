@@ -24,7 +24,15 @@ class DeviceInterface:
 
     def __init__(self, endpoint: ErosEndpoint):
         self.endpoint = endpoint
-
+        self.endpoint.unexpected_message_callback = self.unexpected_message_callback
+        
+    def unexpected_message_callback(self, data: bytes):
+        print(f"Received unexpected message: {data}")
+        
+        response = interface_pb2.Message()
+        response.ParseFromString(data)
+        
+        print(f"Response: {response}")
     async def set(
         self,
         values: list[GenericModel] | GenericModel | Enum,
